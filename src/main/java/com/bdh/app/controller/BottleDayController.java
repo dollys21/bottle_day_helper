@@ -4,11 +4,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.ui.ModelMap;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.bdh.app.dao.BottleSizeDAO;
 import com.bdh.app.dao.UserDAO;
+import com.bdh.app.model.BottleSize;
 import com.bdh.app.model.User;
 
 @Controller
@@ -17,14 +20,21 @@ public class BottleDayController {
 	@Autowired
 	UserDAO userDAO;
 
-	@RequestMapping("/home")
-	public String hello(Model model,
-			@RequestParam(value = "name", required = false, defaultValue = "World") String name) {
-		model.addAttribute("name", name);
-		return "home";
+	@Autowired
+	BottleSizeDAO bottleSizeDAO;
+
+	@RequestMapping(value = { "/login", "/" }, method = RequestMethod.GET)
+	public String showLoginPage(ModelMap model) {
+		return "login";
 	}
-	
-	@RequestMapping(value = "/welcome", method = RequestMethod.POST)
+
+	/*
+	 * @RequestMapping("/dashboard") public String hello(Model model,
+	 * 
+	 * @RequestParam(value = "name", required = false, defaultValue = "World")
+	 * String name) { model.addAttribute("name", name); return "home"; }
+	 */
+	@RequestMapping(value = "/home", method = RequestMethod.POST)
 	public String showWelcomePage(ModelMap model, @RequestParam String name, @RequestParam String password) {
 		boolean isValidUser = true;
 		try {
@@ -41,12 +51,18 @@ public class BottleDayController {
 		}
 		// model.put("name", name);
 		// model.put("password", password);
+		
+		
 		return "home";
 	}
 
-	@RequestMapping(value = "/login", method = RequestMethod.GET)
-	public String showLoginPage(ModelMap model) {
-		return "login";
+	@RequestMapping(value = "/dashboard", method = RequestMethod.POST)
+	public String getBottleData(ModelMap model, @ModelAttribute("bottleSize") BottleSize bottleSize) {
+		System.out.println(bottleSizeDAO.getAllBottleSizes());
+		model.put("batchSizeInGallons",bottleSizeDAO.getAllBottleSizes());
+		model.put("batchSizeInGallons", bottleSize.getUnitInOz());
+		bottleSizeDAO.createBottleSize(bottleSize);
+		return "home";
 	}
 
 	@RequestMapping(value = "/create-user", method = RequestMethod.GET)
@@ -67,7 +83,5 @@ public class BottleDayController {
 
 		return "create-user";
 	}
-
-	
 
 }
